@@ -19,6 +19,11 @@
 
 //use std::io::{self,BufRead};
 
+// .nth(i) destroys the iterators
+    // need to use collect ( already added where needed)
+    // then use .get(i) instead of nth. should be able to write without the while loop this way.
+    // can also use [i] for some 
+
 fn main() {
     let riffraff = riff("this is the first string".to_string(), "this is the seccond string".to_string());
     println!("{}",riffraff);
@@ -33,11 +38,11 @@ fn riff(pt1:String,pt2:String) -> String {
     let diffs: String = pt2.to_string();
     let marked_for_gutting1 = pt1.to_string();
     let marked_for_gutting2 = pt2.to_string();
-    let mut lines1: std::str::Lines<'_> = marked_for_gutting1.lines();
-    let mut lines2: std::str::Lines<'_> = marked_for_gutting2.lines();
+    let lines1: Vec<&str> = marked_for_gutting1.lines().collect();
+    let lines2: Vec<&str> = marked_for_gutting2.lines().collect();
     let mut line_idx: Vec<(usize,String)> = Vec::new();
     for (i,line) in lines1.clone().into_iter().enumerate() { // find different lines
-        match &lines2.nth(i) {
+        match lines2.get(i) {
             Some(tmp_line) => {
                 if tmp_line != &line {
                     line_idx.push((i,tmp_line.to_string()));
@@ -48,22 +53,21 @@ fn riff(pt1:String,pt2:String) -> String {
     }              // row, col_start,col_end,diff_txt
     let mut full_idx:Vec<(usize,usize,usize,String)> = Vec::new();
     for (row,line) in line_idx { // find different charachters
-        let mut d = line.len();
-        while d < line.len() {
             let mut col_start = usize::MAX;
             let mut diff_txt = "".to_string();
             for (i,c) in line.chars().enumerate() {
-                match lines1.nth(row) {
+                match lines1.get(row) {
                     Some(tmp_line) => {
-                        match tmp_line.chars().nth(i) {
+                        let tmp_tmp_line:Vec<char> = tmp_line.chars().collect();
+                        match tmp_tmp_line.get(i) {
                             Some(tmp_char) => {
-                                if c != tmp_char {
+                                if &c != tmp_char {
                                     if col_start == usize::MAX {
-                                        col_start = d;
+                                        col_start = i;
                                     }
                                     diff_txt += &c.to_string();
                                 } else if col_start != usize::MAX {
-                                    full_idx.push((row,col_start,d,diff_txt));
+                                    full_idx.push((row,col_start,i,diff_txt));
                                     break;
                                 }
                             }
@@ -73,13 +77,11 @@ fn riff(pt1:String,pt2:String) -> String {
                     None => print!("")
                 }
             }
-            d = d+1;
-        }
     }
     let mut all_diffs:Vec<String> = Vec::new();
-    let mut gutted_diffs = diffs.lines();
+    let gutted_diffs:Vec<&str> = diffs.lines().collect();
     for (row, col_start,col_end,_diff_txt) in full_idx {
-        match gutted_diffs.nth(row) {
+        match gutted_diffs.get(row) {
             Some(txt) => {
                 let mut tmp_line = txt.to_string();
                 tmp_line.insert_str(col_start, &red);
