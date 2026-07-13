@@ -18,23 +18,17 @@
 // No AI because im big brained!!! ;3
 
 //use std::io::{self,BufRead};
+use colored::Colorize;
 
-// .nth(i) destroys the iterators
-    // need to use collect ( already added where needed)
-    // then use .get(i) instead of nth. should be able to write without the while loop this way.
-    // can also use [i] for some 
+// needs rewrite for using colored::Colorize
+// https://stackoverflow.com/questions/69981449/how-do-i-print-colored-text-to-the-terminal-in-rust
 
 fn main() {
-    let riffraff = riff("this is the first string".to_string(), "this is the seccond string".to_string());
+    let riffraff = riff("riff".to_string(), "raff".to_string());
     println!("{}",riffraff);
 }
 
 fn riff(pt1:String,pt2:String) -> String {
-    // Bash Color
-    let red:String = "\\033[31m".to_string(); // if new
-    let _yel_bg:String = "\\033[0;43m".to_string(); // if removed //UNUSED CURRENTLY
-    let clr:String = "\\e[0m".to_string(); //end color
-
     let diffs: String = pt2.to_string();
     let marked_for_gutting1 = pt1.to_string();
     let marked_for_gutting2 = pt2.to_string();
