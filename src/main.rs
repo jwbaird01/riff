@@ -20,7 +20,8 @@
 //use std::io::{self,BufRead};
 
 fn main() {
-    println!("{}",riff("this is the first string".to_string(), "this is the seccond string".to_string()));
+    let riffraff = riff("this is the first string".to_string(), "this is the seccond string".to_string());
+    println!("{}",riffraff);
 }
 
 fn riff(pt1:String,pt2:String) -> String {
