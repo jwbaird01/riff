@@ -24,66 +24,71 @@ use colored::Colorize;
 // https://stackoverflow.com/questions/69981449/how-do-i-print-colored-text-to-the-terminal-in-rust
 
 fn main() {
-    let riffraff = riff("riff".to_string(), "raff".to_string());
+    let riffraff = riff("1234".to_string(), "123".to_string());
     println!("{}",riffraff);
 }
 
-fn riff(pt1:String,pt2:String) -> String {
-    let diffs: String = pt2.to_string();
-    let marked_for_gutting1 = pt1.to_string();
-    let marked_for_gutting2 = pt2.to_string();
-    let lines1: Vec<&str> = marked_for_gutting1.lines().collect();
-    let lines2: Vec<&str> = marked_for_gutting2.lines().collect();
-    let mut line_idx: Vec<(usize,String)> = Vec::new();
-    for (i,line) in lines1.clone().into_iter().enumerate() { // find different lines
-        match lines2.get(i) {
-            Some(tmp_line) => {
-                if tmp_line != &line {
-                    line_idx.push((i,tmp_line.to_string()));
+fn riff(pt1: String, pt2: String) -> String {
+    let lines1: Vec<&str> = pt1.lines().collect();
+    let lines2: Vec<&str> = pt2.lines().collect();
+    let max_lines = lines1.len().max(lines2.len());
+    let mut all_diffs: Vec<String> = Vec::new();
+
+    for row in 0..max_lines {
+        let line1 = lines1.get(row).copied().unwrap_or("");
+        let line2 = lines2.get(row).copied().unwrap_or("");
+        let line1_chars: Vec<char> = line1.chars().collect();
+        let line2_chars: Vec<char> = line2.chars().collect();
+        let mut out = String::new();
+        let mut i = 0usize;
+        let max_len = line1_chars.len().max(line2_chars.len());
+
+        while i < max_len {
+            match (line1_chars.get(i).copied(), line2_chars.get(i).copied()) {
+                (Some(ch1), Some(ch2)) if ch1 == ch2 => {
+                    out.push(ch2);
+                    i += 1;
                 }
-            }
-            None => print!("")
-        }
-    }              // row, col_start,col_end,diff_txt
-    let mut full_idx:Vec<(usize,usize,usize,String)> = Vec::new();
-    for (row,line) in line_idx { // find different charachters
-            let mut col_start = usize::MAX;
-            let mut diff_txt = "".to_string();
-            for (i,c) in line.chars().enumerate() {
-                match lines1.get(row) {
-                    Some(tmp_line) => {
-                        let tmp_tmp_line:Vec<char> = tmp_line.chars().collect();
-                        match tmp_tmp_line.get(i) {
-                            Some(tmp_char) => {
-                                if &c != tmp_char {
-                                    if col_start == usize::MAX {
-                                        col_start = i;
-                                    }
-                                    diff_txt += &c.to_string();
-                                } else if col_start != usize::MAX {
-                                    full_idx.push((row,col_start,i,diff_txt));
-                                    break;
-                                }
+                (Some(_), Some(_)) => {
+                    let mut diff = String::new();
+
+                    while i < max_len {
+                        match (line1_chars.get(i).copied(), line2_chars.get(i).copied()) {
+                            (Some(a), Some(b)) if a == b => break,
+                            (Some(_), Some(b)) => {
+                                diff.push(b);
+                                i += 1;
                             }
-                            None => print!("")
+                            (Some(_), None) => {
+                                i += 1;
+                            }
+                            (None, Some(b)) => {
+                                diff.push(b);
+                                i += 1;
+                            }
+                            (None, None) => break,
                         }
                     }
-                    None => print!("")
+
+                    if !diff.is_empty() {
+                        out.push_str(&format!("{}", diff.bold().red()));
+                    }
                 }
+                (Some(_), None) => {
+                    i += 1;
+                }
+                (None, Some(ch2)) => {
+                    out.push_str(&format!("{}", ch2.to_string().bold().red()));
+                    i += 1;
+                }
+                (None, None) => break,
             }
-    }
-    let mut all_diffs:Vec<String> = Vec::new();
-    let gutted_diffs:Vec<&str> = diffs.lines().collect();
-    for (row, col_start,col_end,_diff_txt) in full_idx {
-        match gutted_diffs.get(row) {
-            Some(txt) => {
-                let mut tmp_line = txt.to_string();
-                tmp_line.insert_str(col_start, &red);
-                tmp_line.insert_str(col_end+&red.len(), &clr);
-                all_diffs.push(tmp_line.to_string());
-            }
-            None => print!("")
         }
-    }    
-    return all_diffs.join("\n");
+
+        if !out.is_empty() {
+            all_diffs.push(out);
+        }
+    }
+
+    all_diffs.join("\n")
 }
